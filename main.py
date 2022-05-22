@@ -2,10 +2,9 @@ from lib.airos import api
 
 # Entry point for the script ---------------------------------------------------------------------
 if (__name__ == '__main__'):
-    _airos = api()
-    _airos.tryAuth()
+    airosapi = api()
 
     print('AirOS Toolkit')
     
-    if (_airos.tryAuth()):
-        print('True')
+    #airosapi.tryAuth('192.168.1.1')
+    #airosapi.get('https://10.1.0.1/')
