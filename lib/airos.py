@@ -15,7 +15,7 @@ class api:
         return result
 
 
-    def __post(self, url: str, uri, payload, schema='https://', timeout=10, verify=False):
+    def __post(self, url: str, uri: str, payload: dict, schema='https://', timeout=10, verify=False):
         """Internal function for a web post request
         Args: 'url' URL for a post request
               'uri' URI for a post request
@@ -31,6 +31,7 @@ class api:
     def __authMethod(self, ip: ipaddress.IPv4Address):
         """Function for determining the method required for authentication
         Args: 'ip' IPv4 address of the target
+        
         returns -1 for error state
         returns 0 for AirOS v4.0
         returns 1 for AirOS v4.1+
@@ -69,18 +70,29 @@ class api:
             return False
 
 
-    def tryAuth(self, ip: ipaddress.IPv4Address):
+    def tryAuth(self, ip: ipaddress.IPv4Address, username: str, password: str):
         """Function for attepmting authentication with username/password
         Returns False as error state
         Args: 'ip' IPv4 address for authentication
         """
         # validate given IPv4 address to avoid errors
         if (self.__validateIP(ip)):
-
-            self.__authMethod(ip)
-
-
-            return True
+            # Call __authMethod for the required detection of different 
+            # AirOS versions and get required session id cooke for 
+            # older versions of AirOS v4.*
+            authMethodIndex = self.__authMethod(ip)
+            
+            # Handle authentication methods
+            if (authMethodIndex == 0 or authMethodIndex == 1):
+                # AirOS v4.0 & AirOS v4.1+
+                self.__post(ip, '/login.cgi', {'username':username, 'password':password})
+                return True
+            elif (authMethodIndex == 2):
+                # AirOS v8.*
+                self.__post(ip, '/api/auth', {'username':username, 'password':password})
+                return True
+            else:
+                return False
         else:
             return False
 
