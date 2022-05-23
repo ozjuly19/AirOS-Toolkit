@@ -2,19 +2,19 @@
 ## This Pyhon 3.9 library can log into Ubiquity airMax and airFiber devices getting important information automatically.
 
 # Installation and Usage
-1. Python v3 is required for this library to run
+1. Download the code and extract it to a folder
+2. Python v3 is required for this library to run (Tested with 3.9)
    - pip might be needed to install required packages
      - Required packages are:
        - requests
        - ipaddress
-2. Profit!
 
 
 
 
 ### Usage
 
-main.py just shows basic useage of the library and how to import it, it is **NOT** important for using the library and can be removed entirely or re-written
+main.py just shows basic useage of the library and how to import it, it is **NOT** important for using the library and can be removed entirely or re-written.
 ```py
 from os import system
 from lib.airos import api
