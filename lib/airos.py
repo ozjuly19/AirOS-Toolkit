@@ -51,6 +51,11 @@ class api:
             # If the http status is 401 this likely means the device is running
             # AirOS v4.1+ and does not have a /api/auth uri and does not redirect
             # to a login page
+
+            # Required to recieve PROPER cookie as getting /api/auth returns fake cookie 
+            # on version 4.1 for reasons (I'm not sure possibly a lefover from attempting to
+            # then putting off going to the v8 way of /api/auth handling)
+            self.__get(ip, '/login.cgi')
             return 1
         elif (sc == 403):
             # If the https status is 403 this likely means the device is running
@@ -69,6 +74,10 @@ class api:
         except ValueError:
             return False
 
+
+    def getStatus(self, ip: ipaddress.IPv4Address):
+        status = self.__get(ip, '/status.cgi').json()
+        return status
 
     def tryAuth(self, ip: ipaddress.IPv4Address, username: str, password: str):
         """Function for attepmting authentication with username/password
