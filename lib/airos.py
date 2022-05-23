@@ -86,11 +86,23 @@ class api:
             if (authMethodIndex == 0 or authMethodIndex == 1):
                 # AirOS v4.0 & AirOS v4.1+
                 self.__post(ip, '/login.cgi', {'username':username, 'password':password})
-                return True
+                res = self.__get(ip, '/status.cgi')
+
+                # res will not throw a JSONDecodeError if authenticated
+                try:
+                    res.json()
+                    return True
+                except requests.JSONDecodeError:
+                    return False
             elif (authMethodIndex == 2):
                 # AirOS v8.*
-                self.__post(ip, '/api/auth', {'username':username, 'password':password})
-                return True
+                res = self.__post(ip, '/api/auth', {'username':username, 'password':password}).status_code
+
+                # res will be http status code 200 if authenticated
+                if (res == 200):
+                    return True
+                else:
+                    return False
             else:
                 return False
         else:
@@ -100,3 +112,6 @@ class api:
     def __init__(self):
         # self.ws is the requests session used for saving cookies on comunications
         self.ws = requests.Session()
+
+        # Disable ssl warnings due to self signed ssl on Ubiquity devices
+        requests.packages.urllib3.disable_warnings()

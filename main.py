@@ -6,7 +6,7 @@ if (__name__ == '__main__'):
 
     print('AirOS Toolkit')
     
-    if (airosapi.tryAuth('192.168.1.1', 'root', 'password')):
+    if (airosapi.tryAuth(input('IP Address: '), input('Username: '), input('Password: '))):
         print('Authenticated!')
     else:
         print('Incorrect username/password')
