@@ -64,6 +64,7 @@ class api:
         else: 
             return -1
 
+
     def __validateIP(self, ip: ipaddress.IPv4Address):
         """Function for validating an IP (correct format i.e. 192.168.1.20
         Args: 'ip' IPv4 address to check if it is an acceptable format
@@ -78,6 +79,7 @@ class api:
     def getStatus(self, ip: ipaddress.IPv4Address):
         status = self.__get(ip, '/status.cgi').json()
         return status
+
 
     def tryAuth(self, ip: ipaddress.IPv4Address, username: str, password: str):
         """Function for attepmting authentication with username/password
