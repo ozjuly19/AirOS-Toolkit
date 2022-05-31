@@ -3,7 +3,7 @@ from lib.airos import api
 
 # Entry point for the script ---------------------------------------------------------------------
 if (__name__ == '__main__'):
-    airosapi = api()
+    airosapi = api(disableSSLWarn=True)
 
     print('AirOS Toolkit')
     ip = input('IP Address: ')

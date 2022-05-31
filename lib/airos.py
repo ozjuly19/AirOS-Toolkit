@@ -120,9 +120,12 @@ class api:
             return False
 
             
-    def __init__(self):
+    def __init__(self, disableSSLWarn = True):
+        """Initialize the api class
+        Args: 'dissableSSLWarn' (default: True) enables ssl warn suppression or disabeles it"""
         # self.ws is the requests session used for saving cookies on comunications
         self.ws = requests.Session()
 
         # Disable ssl warnings due to self signed ssl on Ubiquity devices
-        requests.packages.urllib3.disable_warnings()
+        if (disableSSLWarn):
+            requests.packages.urllib3.disable_warnings()
