@@ -18,8 +18,8 @@ def writeToCSVA(data):
     file.close()
 
 
-def writeToCSV(data):
-    file = open('files/info.csv', 'w', newline='')
+def writeToCSV(data, name = 'info.csv'):
+    file = open('files/' + name, 'w', newline='')
     writer = csv.writer(file)
     writer.writerows(data)
     file.close()
@@ -220,20 +220,24 @@ if __name__ == '__main__':
     except ValueError as e:
         log(str(e), True)
         exit()
+    networkCidr = cidr
 
     # Caching
     cacheExists = False
-    cache: str = None
+    cache = ''
     deadIPs = []
     ret = []
     hashedCidr = hashlib.md5(str(list(cidr.hosts())).encode('utf-8')).hexdigest()
     cacheFileDir = 'files/cache/' + hashedCidr + '.data'
+
+    #print(hashedCidr)
 
     # Get data from cache file if it exists 
     cache = deserialize(cacheFileDir, False)
     if cache != None:
         cacheExists = True
 
+    #exit()
     if cacheExists:
         log('--== Found cache\'d IPs ==--', False, True)
 
@@ -330,7 +334,7 @@ if __name__ == '__main__':
     log('--== Writing data ==--', False, True)
 
     # write out data
-    writeToCSV(data)
+    writeToCSV(data, str(networkCidr).replace('/', '-') + '.csv')
     
     # Inform user that execution is complete
     log('--== Operation complete ' + str(datetime.datetime.today()) + ' ==--', False, True)
