@@ -46,7 +46,10 @@ class api:
 
         # Send get request to /api/auth different versions of AirOS respond with
         # different http status codes per the version the devices firmware is
-        sc = self.__get(str(ip), '/api/auth').status_code
+        try:
+            sc = self.__get(str(ip), '/api/auth').status_code
+        except AttributeError:
+            return -1
 
         # Detect estimate firmware version
         if sc == 200:
