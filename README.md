@@ -30,12 +30,12 @@ __YOU MUST TURN DOWN mpPoolSize__
        - os
        - csv
        - json
-       - math
        - requests
        - ipaddress
+       - functools
        - multiprocessing
+       - airos -> included in /lib/airos.py
        - ping3
-       - datetime
 2. After installing required packages place the script in its own directory
 3. Before running rename __config-template.json__ to __config.json__ and edit the variables inside. (Example config seen below)
 4. Profit!
