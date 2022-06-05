@@ -1,37 +1,65 @@
 # AirOS-Toolkit
-## This Pyhon 3.9 library can log into Ubiquity airMax and airFiber devices getting important information automatically.
+## This Pyhon 3.9 script & library can log into Ubiquity airMax and airFiber devices getting important information automatically.
+
+
+> Using the config.json file you can setup the bruteforce login info (usernames & passwords) alongside being able to setup the CIDR scan range.
+
+ - This script outputs a debug log (debug.log) of the console output to its home directory.
+ - All the contacted devices and information of them to a csv file (log.csv)
+ - And uses multiprocessing to speed up certian processes within
+
+### To configure multiproccessing pool sizes open config.json and find the line:
+```json
+  "mpPoolSize":5
+```
+You can change the integer (default 5) as high ***as your system can handle*** which will speed up certian processes within the script.
+
+
+__IF THE SCRIPT THROWS ERRORS WHEN LAUNCHING LIKE__:
+```
+ValueError: need at most 63 handles, got a sequence of length 70
+```
+__YOU MUST TURN DOWN mpPoolSize__
+
 
 # Installation and Usage
-1. Download the code and extract it to a folder
-2. Python v3 is required for this library to run (Tested with 3.9)
-   - pip might be needed to install required packages
+0. Clone the repo and unpack
+1. Python v3 is required for this script to run
+   - pip is needed to install required packages
      - Required packages are:
+       - os
+       - csv
+       - json
+       - math
        - requests
        - ipaddress
+       - multiprocessing
+       - ping3
+       - datetime
+2. After installing required packages place the script in its own directory
+3. Before running rename __config-template.json__ to __config.json__ and edit the variables inside. (Example config seen below)
+4. Profit!
 
 
 
 
-### Usage
+### Example config
 
-main.py just shows basic useage of the library and how to import it, it is **NOT** important for using the library and can be removed entirely or re-written.
-```py
-from os import system
-from lib.airos import api
-
-# Entry point for the script ---------------------------------------------------------------------
-if (__name__ == '__main__'):
-    airosapi = api()
-
-    print('AirOS Toolkit')
-    ip = input('IP Address: ')
-
-    if (airosapi.tryAuth(ip, input('Username: '), input('Password: '))):
-        system('cls')
-        print('Authenticated!')
-        host = airosapi.getStatus(ip)['host']
-        print('Firmware: ' + host['fwversion'])
-        print('Model: ' + host['devmodel'])
-    else:
-        print('Incorrect username/password')
+File name: __config.json__
+```json
+{
+    "auth": {
+        "usernames": [
+            "root",
+            "admin"
+        ],
+        "passwords": [
+            "!password0",
+            "p455w0rd1",
+            "PassWord2"
+        ]
+    },
+    "cidr": "10.10.0.0/24",
+    "mpPoolSize": 5
+}
 ```
