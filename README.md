@@ -34,6 +34,7 @@ __YOU MUST TURN DOWN mpPoolSize__
        - ipaddress
        - functools
        - multiprocessing
+       - datetime
        - airos -> included in /lib/airos.py
        - ping3
 2. After installing required packages place the script in its own directory

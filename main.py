@@ -5,6 +5,7 @@ import ipaddress
 from ping3 import ping  # Needs installed
 from functools import partial
 from lib.airos import api  # Internal API
+import datetime
 from multiprocessing import Pool
 
 
@@ -190,7 +191,7 @@ if __name__ == '__main__':
     f.close()
 
     # Welcome message
-    log('--== AirOS Toolkit ==--', False, True)
+    log('--== AirOS Toolkit ' + str(datetime.datetime.today()) + ' ==--', False, True)
 
     log('Reading config...')
 
@@ -281,4 +282,4 @@ if __name__ == '__main__':
     writeToCSV(data)
     
     # Inform user that execution is complete
-    log('--== Operation complete ==--', False, True)
+    log('--== Operation complete ' + str(datetime.datetime.today()) + ' ==--', False, True)
