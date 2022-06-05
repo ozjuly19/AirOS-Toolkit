@@ -14,7 +14,7 @@ class api:
         try:
             result = self.ws.get(url=schema + url + uri,
                                  timeout=timeout, verify=verify)
-        except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
+        except Exception:
             return None
         return result
 
@@ -30,7 +30,7 @@ class api:
         try:
             result = self.ws.post(schema + url + uri, payload,
                                   timeout=timeout, verify=verify)
-        except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
+        except Exception:
             return None
         return result
 
