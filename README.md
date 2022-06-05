@@ -45,7 +45,7 @@ __YOU MUST TURN DOWN mpPoolSize__
 
 ### Example config
 
-File name: __config.json__
+File name: __files/config.json__
 ```json
 {
     "auth": {
