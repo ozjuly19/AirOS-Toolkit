@@ -187,154 +187,155 @@ def processIPs(usernames, passwords, deadIPs, cidr):
 
 # Entry point for the script ---------------------------------------------------------------------
 if __name__ == '__main__':
-    # Clear log file
-    f = open('files/debug.log', 'w')
-    f.write('')
-    f.close()
+    for i in range(256):
+        # Clear log file
+        f = open('files/debug.log', 'w')
+        f.write('')
+        f.close()
 
-    # Welcome message
-    log('--== AirOS Toolkit ' + str(datetime.datetime.today()) + ' ==--', False, True)
+        # Welcome message
+        log('--== AirOS Toolkit ' + str(datetime.datetime.today()) + ' ==--', False, True)
 
-    log('Reading config...')
+        log('Reading config...')
 
-    # Get data from config file
-    config = deserialize('files/config.json')
+        # Get data from config file
+        config = deserialize('files/config.json')
 
-    # Assign data to variables
-    cidr = config['cidr']
-    poolSize = config['mpPoolSize']
-    passwords = config['auth']['passwords']
-    usernames = config['auth']['usernames']
+        # Assign data to variables
+        cidr = '10.10.' + str(i) + '.0/24'#config['cidr']
+        poolSize = config['mpPoolSize']
+        passwords = config['auth']['passwords']
+        usernames = config['auth']['usernames']
 
-    log('Done.')
+        log('Done.')
 
-    # Set CSV headers
-    data = [['ID', 'Alive IP', 'IP Address', 'Device Name', 'Device Model',
-             'Firmware Version', 'Username', 'Used Password', 'UISP Status', 'HTTP Code']]
+        # Set CSV headers
+        data = [['ID', 'Alive IP', 'IP Address', 'Device Name', 'Device Model',
+                 'Firmware Version', 'Username', 'Used Password', 'UISP Status', 'HTTP Code']]
 
-    writeToCSV(data)
+        writeToCSV(data)
 
-    # Get cidr from json conf and catch any value errors
-    try:
-        cidr = ipaddress.ip_network(cidr)
-    except ValueError as e:
-        log(str(e), True)
-        exit()
-    networkCidr = cidr
+        # Get cidr from json conf and catch any value errors
+        try:
+            cidr = ipaddress.ip_network(cidr)
+        except ValueError as e:
+            log(str(e), True)
+            exit()
+        networkCidr = cidr
 
-    # Caching
-    cacheExists = False
-    cache = ''
-    deadIPs = []
-    ret = []
-    hashedCidr = hashlib.md5(str(list(cidr.hosts())).encode('utf-8')).hexdigest()
-    cacheFileDir = 'files/cache/' + hashedCidr + '.data'
+        # Caching
+        cacheExists = False
+        cache = ''
+        deadIPs = []
+        ret = []
+        hashedCidr = hashlib.md5(str(list(cidr.hosts())).encode('utf-8')).hexdigest()
+        cacheFileDir = 'files/cache/' + hashedCidr + '.data'
 
-    #print(hashedCidr)
+        #print(hashedCidr)
 
-    # Get data from cache file if it exists 
-    cache = deserialize(cacheFileDir, False)
-    if cache != None:
-        cacheExists = True
+        # Get data from cache file if it exists 
+        cache = deserialize(cacheFileDir, False)
+        if cache != None:
+            cacheExists = True
 
-    #exit()
-    if cacheExists:
-        log('--== Found cache\'d IPs ==--', False, True)
+        #exit()
+        if cacheExists:
+            log('--== Found cache\'d IPs ==--', False, True)
 
-        modTimesinceEpoc = os.path.getmtime(cacheFileDir)
-        modificationTime = time.strftime('%m-%d-%Y %H:%M:%S', time.localtime(modTimesinceEpoc))
-        r = input('[?] Do you want to used cached IP\'s updated on: ' + modificationTime + ' (Y/n): ')
-        if r.lower() == 'y' or r.lower() == '':
-            log('--== Using cache\'d IPs from ' + modificationTime + ' ==--', False, True)
+            modTimesinceEpoc = os.path.getmtime(cacheFileDir)
+            modificationTime = time.strftime('%m-%d-%Y %H:%M:%S', time.localtime(modTimesinceEpoc))
+            r = 'y'#input('[?] Do you want to used cached IP\'s updated on: ' + modificationTime + ' (Y/n): ')
+            if r.lower() == 'y' or r.lower() == '':
+                log('--== Using cache\'d IPs from ' + modificationTime + ' ==--', False, True)
 
-            # Get data from cache file and set variables accordingly
-            for a in cache['aliveIPs']:
-                ret.append(ipaddress.ip_address(a))
-            
-            for d in cache['deadIPs']:
-                deadIPs.append(ipaddress.ip_address(d))
-    
-    if not(cacheExists) or r.lower() == 'n':
-        # Seperate the log
-        log('--== Pinging CIDR ==--', False, True)
+                # Get data from cache file and set variables accordingly
+                for a in cache['aliveIPs']:
+                    ret.append(ipaddress.ip_address(a))
 
-        # Cidr setup
-        cidr = list(cidr.hosts())
-        cidr.remove(cidr[0])
+                for d in cache['deadIPs']:
+                    deadIPs.append(ipaddress.ip_address(d))
+
+        if not(cacheExists) or r.lower() == 'n':
+            # Seperate the log
+            log('--== Pinging CIDR ==--', False, True)
+
+            # Cidr setup
+            cidr = list(cidr.hosts())
+            cidr.remove(cidr[0])
+            segment = split(cidr, poolSize)
+
+            # Multiprocessing pool
+            with Pool(poolSize) as p:
+                ret = p.map(getAliveIPS, segment)
+                ret = list([x for x in ret if x is not None])
+
+            # Seperate the log
+            log('--== Ping complete ==--', False, True)
+
+            # Fix ret list (After ping it will be a list of lists list[][])
+            _ret = []
+            for p in range(len(ret)):
+                _ret.append(ret[p][0])
+            ret = _ret
+
+            # Get IPs that did not respond to ping
+            diff1 = set(ret).difference(set(cidr))
+            diff2 = set(cidr).difference(set(ret))
+            deadIPs = list(diff1.union(diff2))
+
+            # Create cache file
+            f = open(cacheFileDir, 'w')
+            jsonDeadIPs = []
+            jsonAliveIPs = []
+
+            for ip in deadIPs:
+                jsonDeadIPs.append(str(ip))
+
+            for ip in ret:
+                jsonAliveIPs.append(str(ip))
+
+            json.dump({'aliveIPs': jsonAliveIPs, 'deadIPs': jsonDeadIPs}, f)
+            f.close()
+        else:
+            # Cidr setup (known dupelication)
+            cidr = list(cidr.hosts())
+            cidr.remove(cidr[0])
+            segment = split(cidr, poolSize)
+
+        # Multiprocessing pool setup
         segment = split(cidr, poolSize)
+        processIPsPartial = partial(processIPs, usernames, passwords, deadIPs)
 
         # Multiprocessing pool
         with Pool(poolSize) as p:
-            ret = p.map(getAliveIPS, segment)
-            ret = list([x for x in ret if x is not None])
+            procReturn = p.map(processIPsPartial, segment)
+            procReturn = list(procReturn)
 
-        # Seperate the log
-        log('--== Ping complete ==--', False, True)
+        log('--== Parsing output ==--', False, True)
 
-        # Fix ret list (After ping it will be a list of lists list[][])
-        _ret = []
-        for p in range(len(ret)):
-            _ret.append(ret[p][0])
-        ret = _ret
+        # Get data from the processes and fix it
+        procReturn = list([x for x in procReturn if x != 0])
+        for x in range(len(procReturn)):
+            for v in range(len(procReturn)):
+                try:
+                    data.append(procReturn[x][v])
+                except:
+                    pass
+                
+        # Sort ip addresses
+        #datab = data
+        #datab.remove(data[0])
+        #data = sorted(datab, key = lambda x: x[2])
+        #print(data)
 
-        # Get IPs that did not respond to ping
-        diff1 = set(ret).difference(set(cidr))
-        diff2 = set(cidr).difference(set(ret))
-        deadIPs = list(diff1.union(diff2))
+        for x in range(len(data)):
+            if x != 0:
+                data[x][0] = x - 1
 
-        # Create cache file
-        f = open(cacheFileDir, 'w')
-        jsonDeadIPs = []
-        jsonAliveIPs = []
+        log('--== Writing data ==--', False, True)
 
-        for ip in deadIPs:
-            jsonDeadIPs.append(str(ip))
+        # write out data
+        writeToCSV(data, str(networkCidr).replace('/', '-') + '.csv')
 
-        for ip in ret:
-            jsonAliveIPs.append(str(ip))
-
-        json.dump({'aliveIPs': jsonAliveIPs, 'deadIPs': jsonDeadIPs}, f)
-        f.close()
-    else:
-        # Cidr setup (known dupelication)
-        cidr = list(cidr.hosts())
-        cidr.remove(cidr[0])
-        segment = split(cidr, poolSize)
-
-    # Multiprocessing pool setup
-    segment = split(cidr, poolSize)
-    processIPsPartial = partial(processIPs, usernames, passwords, deadIPs)
-
-    # Multiprocessing pool
-    with Pool(poolSize) as p:
-        procReturn = p.map(processIPsPartial, segment)
-        procReturn = list(procReturn)
-
-    log('--== Parsing output ==--', False, True)
-
-    # Get data from the processes and fix it
-    procReturn = list([x for x in procReturn if x != 0])
-    for x in range(len(procReturn)):
-        for v in range(len(procReturn)):
-            try:
-                data.append(procReturn[x][v])
-            except:
-                pass
-    
-    # Sort ip addresses
-    #datab = data
-    #datab.remove(data[0])
-    #data = sorted(datab, key = lambda x: x[2])
-    #print(data)
-
-    for x in range(len(data)):
-        if x != 0:
-            data[x][0] = x - 1
-
-    log('--== Writing data ==--', False, True)
-
-    # write out data
-    writeToCSV(data, str(networkCidr).replace('/', '-') + '.csv')
-    
-    # Inform user that execution is complete
-    log('--== Operation complete ' + str(datetime.datetime.today()) + ' ==--', False, True)
+        # Inform user that execution is complete
+        log('--== Operation complete ' + str(datetime.datetime.today()) + ' ==--', False, True)
