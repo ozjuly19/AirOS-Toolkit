@@ -11,8 +11,11 @@ class api:
               'timeout' (default: 10) time to wait before timing out the request
               'verify' (default: False) if true get requests do not verify the ssl certificate
         """
-        result = self.ws.get(url=schema + url + uri,
-                             timeout=timeout, verify=verify)
+        try:
+            result = self.ws.get(url=schema + url + uri,
+                                 timeout=timeout, verify=verify)
+        except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
+            return None
         return result
 
     def __post(self, url: str, uri: str, payload: dict, schema='https://', timeout=10, verify=False):
@@ -27,7 +30,7 @@ class api:
         try:
             result = self.ws.post(schema + url + uri, payload,
                                   timeout=timeout, verify=verify)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
             return None
         return result
 
