@@ -237,8 +237,8 @@ if __name__ == '__main__':
         config = deserialize('files/config.json')
 
         # Assign data to variables
-        #cidr = '10.10.' + str(i) + '.0/24'#
-        cidr = config['cidr']
+        cidr = '10.10.' + str(i) + '.0/24'#
+        #cidr = config['cidr']
         poolSize = config['mpPoolSize']
         passwords = config['auth']['passwords']
         usernames = config['auth']['usernames']
