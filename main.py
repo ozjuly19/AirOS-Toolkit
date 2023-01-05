@@ -92,33 +92,30 @@ def processIPs(usernames, passwords, deadIPs, cidr):
     # Recursively execute code for every IP in cidr
     for id in range(len(cidr)):
         # Setup variables
-        alive = True
-        ip = cidr[id]
-        devName:    str = 'N/A'
-        devModel:   str = 'N/A'
-        devFwVer:   str = 'N/A'
-        user:       str = 'N/A'
-        pwID:       int = 0
-        uispStatus: str = 'N/A'
-        httpCode:   int = 999
+        newLine = dict()
+        newLine['id']              = id       # ID
+        newLine['alive']           = True     # Alive IP
+        ip                         = cidr[id] # IP Address
+        newLine['ip']              = ip
+        newLine['devName']:    str = 'N/A'    # Device Name
+        newLine['devModel']:   str = 'N/A'    # Device Model
+        newLine['devFwVer']:   str = 'N/A'    # Firmware Version
+        newLine['user']:       str = 'N/A'    # Username
+        newLine['pwID']:       int = 0        # Used Password
+        newLine['ssid']:       str = 'N/A'    # Devices connected/broadcasting ssid
+        newLine['mode']:       str = 'N/A'    # Radio mode (i.e. ap)
+        newLine['frequency']:  str = 'N/A'    # Radio Frequency
+        newLine['bandwidth']:  str = 'N/A'    # Radio bandwidth
+        newLine['isDfs']:      str = 'N/A'    # If the radio is in dfs channels
+        newLine['httpCode']:   int = 999      # HTTP Code
 
         # if the IP is dead skip other operations and log this
         if ip in deadIPs:
-            alive = False
-            httpCode = 502
+            newLine['alive'] = False
+            newLine['httpCode'] = 502
+            newLine['ip'] = str(ip)
 
-            data.append([
-                id,          # ID
-                alive,       # Alive IP
-                str(ip),          # IP Address
-                devName,     # Device Name
-                devModel,    # Device Model
-                devFwVer,    # Firmware Version
-                user,        # Username
-                pwID,        # Used Password
-                uispStatus,  # UISP Status
-                httpCode     # HTTP Code
-            ])
+            data.append(list(newLine.values()))
             continue
 
         # Inform the user of the current ip and index
@@ -149,45 +146,83 @@ def processIPs(usernames, passwords, deadIPs, cidr):
 
             # Get data and catch for missing variables
             try:
-                uispStatus = str(statusJson['unms']['status'])
+                # Deserialize the stored mode
+                givenMode = str(statusJson['wireless']['mode'])
+                
+                modeLookup = {
+                    'sta-ptmp': 'Station',
+                    'ap-ptmp': 'AP',
+                    'ap-ptp': 'PTP Master',
+                    'sta-ptp': 'PTP Slave',
+                    'master': 'AirFiber Master',
+                    'slave': 'AirFiber Slave'
+                    }
+
+                newLine['mode'] = modeLookup[givenMode]
             except Exception:
-                uispStatus = 'N/A'
+                newLine['mode'] = 'N/A'
 
             try:
-                devName = str(statusJson['host']['hostname'])
+                newLine['frequency'] = str(statusJson['wireless']['frequency']).replace(' MHz', '') # .replace removes ' MHz' from the frequency on some airos devices (airfiber)
             except Exception:
-                devName = 'N/A'
+                newLine['frequency'] = 'N/A'
 
             try:
-                devModel = statusJson['host']['devmodel']
+                newLine['ssid'] = statusJson['wireless']['essid']
             except Exception:
-                devModel = 'N/A'
+                newLine['ssid'] = 'N/A'
 
             try:
-                devFwVer = statusJson['host']['fwversion']
+                if (statusJson['wireless']['dfs']):
+                    newLine['isDfs'] = 'TRUE'
+                else:
+                    newLine['isDfs'] = 'FALSE'
             except Exception:
-                devFwVer = 'N/A'
+                newLine['isDfs'] = 'N/A'
 
-        # Write data to csv
-        data.append([
-            id,          # ID
-            alive,       # Alive IP
-            str(ip),     # IP Address
-            devName,     # Device Name
-            devModel,    # Device Model
-            devFwVer,    # Firmware Version
-            user,        # Username
-            pwID,        # Used Password
-            uispStatus,  # UISP Status
-            httpCode     # HTTP Code
-        ])
+            try:
+                newLine['bandwidth'] = statusJson['wireless']['chanbw']
+            except Exception:
+                newLine['bandwidth'] = 'N/A'
+
+            try:
+                newLine['devName'] = statusJson['host']['hostname']
+            except Exception:
+                newLine['devName'] = 'N/A'
+
+            try:
+                newLine['devModel'] = statusJson['host']['devmodel']
+            except Exception:
+                newLine['devModel'] = 'N/A'
+
+            try:
+                newLine['devFwVer'] = statusJson['host']['fwversion']
+            except Exception:
+                newLine['devFwVer'] = 'N/A'
+
+            # Write data to csv
+            newLine['user'] = user
+            newLine['pwID'] = pwID
+
+        newLine['ip'] = str(ip)
+        newLine['httpCode'] = httpCode
+        data.append(list(newLine.values()))
     
     data.remove(data[0])
     return data
 
+# ---------------------
+
+# Investigate 5ac (gen1) authentication
+
+# ---------------------
+
+
 # Entry point for the script ---------------------------------------------------------------------
 if __name__ == '__main__':
+    #if 1 == 1: # Just added to use one part of the cidr
     for i in range(256):
+        #i = 0
         # Clear log file
         f = open('files/debug.log', 'w')
         f.write('')
@@ -202,7 +237,8 @@ if __name__ == '__main__':
         config = deserialize('files/config.json')
 
         # Assign data to variables
-        cidr = '10.10.' + str(i) + '.0/24'#config['cidr']
+        #cidr = '10.10.' + str(i) + '.0/24'#
+        cidr = config['cidr']
         poolSize = config['mpPoolSize']
         passwords = config['auth']['passwords']
         usernames = config['auth']['usernames']
@@ -211,7 +247,7 @@ if __name__ == '__main__':
 
         # Set CSV headers
         data = [['ID', 'Alive IP', 'IP Address', 'Device Name', 'Device Model',
-                 'Firmware Version', 'Username', 'Used Password', 'UISP Status', 'HTTP Code']]
+                 'Firmware Version', 'Username', 'Used Password', 'SSID', 'Radio Mode', 'Frequency', 'Bandwidth', 'In DFS', 'HTTP Code']]
 
         writeToCSV(data)
 
