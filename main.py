@@ -160,7 +160,22 @@ def processIPs(usernames, passwords, deadIPs, cidr):
 
                 newLine['mode'] = modeLookup[givenMode]
             except Exception:
-                newLine['mode'] = 'N/A'
+                try:
+                    # Is likely airfiber
+                    givenMode = str(statusJson['wireless']['opmode'])
+
+                    modeLookup = {
+                        'sta-ptmp': 'Station',
+                        'ap-ptmp': 'AP',
+                        'ap-ptp': 'PTP Master',
+                        'sta-ptp': 'PTP Slave',
+                        'master': 'AirFiber Master',
+                        'slave': 'AirFiber Slave'
+                        }
+
+                    newLine['mode'] = modeLookup[givenMode]
+                except:
+                    newLine['mode'] = 'N/A'
 
             try:
                 newLine['frequency'] = str(statusJson['wireless']['frequency']).replace(' MHz', '') # .replace removes ' MHz' from the frequency on some airos devices (airfiber)
