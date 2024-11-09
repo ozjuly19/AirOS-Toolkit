@@ -15,9 +15,9 @@ export default function CurrentAuthEntries() {
   return (
     <Card>
       <CardContent>
-        <Typography variant='h5'>Currently Authenticated Stations</Typography>
+        <Typography variant='h5'>Current Auth Tokens</Typography>
 
-        <Paper sx={{ height: 400, width: '100%' }}>
+        <Paper sx={{ height: 400, width: '100%', marginTop: 1 }}>
           <DataGrid
             rows={AirOSTokens.map((entry) => {
               return {
