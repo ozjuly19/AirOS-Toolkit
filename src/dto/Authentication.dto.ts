@@ -1,8 +1,9 @@
-import { set, z } from 'zod'
+import { z } from 'zod'
+import { StringToRecord } from './Transformers';
 
 // Used in AirOSLib mainly for storing JWTs
 export const AuthTokenMeta = z.object({
-    auth_token: z.string(),
+    auth_token: z.custom<AuthTokenType>(),
     station_ip: z.string().ip({ version: 'v4' }),
     isValid: z.boolean()
 });
@@ -14,26 +15,7 @@ export const AuthSuccessReturn = z.object({
     ccode: z.number(),
     boardinfo: z
         .string()
-        .transform((rawBoardInfo: string) => {
-            return rawBoardInfo.split('\n').reduce((acc, line) => {
-                const splitty = line.split('=');
-
-                if (splitty.length === 2) {
-                    const [key, value] = splitty;
-
-                    acc[key] = value;
-                }
-
-                if (splitty.length > 2) {
-                    const key = splitty[0];
-                    const value = splitty.slice(1).join('=');
-
-                    acc[key] = value;
-                }
-
-                return acc;
-            }, {} as Record<string, string>);
-        }),
+        .transform((rawBoardInfo: string) => StringToRecord.parse(rawBoardInfo)),
     rd: z.array(z.string()),
     fullVersion: z.string(),
 });
