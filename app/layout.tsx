@@ -4,7 +4,8 @@ import * as React from 'react';
 import { AppProvider } from '@toolpad/core/nextjs';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import LoginIcon from '@mui/icons-material/Login';
-// import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ManagementIcon from '@mui/icons-material/ManageAccounts';
+import DescriptionIcon from '@mui/icons-material/Description';
 import type { Navigation } from '@toolpad/core/AppProvider';
 
 import theme from '../theme';
@@ -12,18 +13,23 @@ import theme from '../theme';
 const NAVIGATION: Navigation = [
   {
     kind: 'header',
-    title: 'Tools',
+    title: 'Navigation',
   },
   {
     segment: '',
-    title: 'Station Login',
-    icon: <LoginIcon />,
+    title: 'Tools',
+    icon: <DescriptionIcon />,
   },
-  // {
-  //   segment: 'orders',
-  //   title: 'Orders',
-  //   icon: <ShoppingCartIcon />,
-  // },
+  {
+    segment: 'management',
+    title: 'Station Management',
+    icon: <ManagementIcon />,
+  },
+  {
+    segment: 'currentAuthEntries',
+    title: 'Authenticated Stations',
+    icon: <LoginIcon />,
+  }
 ];
 
 const BRANDING = {
