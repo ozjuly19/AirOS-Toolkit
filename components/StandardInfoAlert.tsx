@@ -1,3 +1,4 @@
+'use client'
 
 import React from 'react';
 import { Collapse, Alert, IconButton } from '@mui/material';

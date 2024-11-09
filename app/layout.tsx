@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react';
+import React from 'react';
 import { AppProvider } from '@toolpad/core/nextjs';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import LoginIcon from '@mui/icons-material/Login';
@@ -9,6 +9,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import type { Navigation } from '@toolpad/core/AppProvider';
 
 import theme from '../theme';
+import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
+import { AirOSAuthContext } from '@/src/AirOSLib';
 
 const NAVIGATION: Navigation = [
   {
@@ -36,10 +38,9 @@ const BRANDING = {
   title: 'AirOS Toolkit',
 };
 
-export const GlobalContext = React.createContext<any>(null);
-
 export default function RootLayout(props: { children: React.ReactNode }) {
-  const [authJWT, setAuthJWT] = React.useState<string | null>(null);
+  const [AirOSTokens, setAirOSTokens] = React.useState<AuthTokenStoreType[]>([]);
+  const [AuthResponses, setAuthResponses] = React.useState<PostAuthReturnType[]>([]);
 
   return (
     <html lang="en" data-toolpad-color-scheme="light" suppressHydrationWarning>
@@ -52,9 +53,15 @@ export default function RootLayout(props: { children: React.ReactNode }) {
 
             theme={theme}
           >
-            <GlobalContext.Provider value={{ authJWT, setAuthJWT }}>
+            <AirOSAuthContext.Provider value={
+              {
+                AirOSTokens,
+                setAirOSTokens,
+                AuthResponses,
+                setAuthResponses
+              }}>
               {props.children}
-            </GlobalContext.Provider>
+            </AirOSAuthContext.Provider>
           </AppProvider>
         </AppRouterCacheProvider>
 

@@ -1,16 +1,25 @@
-import { Box, MenuItem, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { AuthReturnType } from "@/types/AirOSApi";
-import React from "react";
+'use client'
 
-export function AuthDataTabs({ AuthReturnJson }: { AuthReturnJson: AuthReturnType }) {
+import { Box, MenuItem, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { AuthSuccessReturn, AuthSuccessReturnType } from "@/src/dto/Authentication.dto";
+import React, { useEffect } from "react";
+
+export function AuthDataTabs({ AuthReturnJson }: { AuthReturnJson: AuthSuccessReturnType }) {
     // Seperate the authJson.boardinfo into multiple arrays
     // Each array will be seperated by the first part of the key
     // E.g. radio.1.freq => radio.1 => Radio 1
 
-    const boardinfo = AuthReturnJson.boardinfo;
+    let boardinfo: Record<string, string> = {};
+
+    if (typeof AuthReturnJson.boardinfo !== 'string')
+        boardinfo = AuthReturnJson.boardinfo;
+    else {
+        boardinfo = AuthSuccessReturn.parse(AuthReturnJson).boardinfo;
+    }
 
     const arrayOfSubjects = Object.entries(boardinfo).reduce((acc, [key, value]) => {
         const [subject] = key.split('.');
+
         if (!acc[subject]) {
             acc[subject] = [];
         }
@@ -21,6 +30,11 @@ export function AuthDataTabs({ AuthReturnJson }: { AuthReturnJson: AuthReturnTyp
     }, {} as Record<string, { key: string, value: string }[]>);
 
     const [selectedTable, setSelectedTable] = React.useState<string>("");
+
+    useEffect(() => {
+        if (selectedTable === "")
+            setSelectedTable(Object.keys(arrayOfSubjects)[0]);
+    }, [arrayOfSubjects, selectedTable]);
 
     const changeTable = (event: SelectChangeEvent) => {
         console.log(event.target.value);
@@ -41,8 +55,8 @@ export function AuthDataTabs({ AuthReturnJson }: { AuthReturnJson: AuthReturnTyp
                     <MenuItem key={subject} value={subject}>{subject}</MenuItem>
                 ))}
             </Select>
-            {selectedTable == "" ? null :
-                <TableContainer>
+            {!arrayOfSubjects[selectedTable] ? null :
+                <TableContainer sx={{ marginTop: 1 }}>
                     <Table sx={{ minWidth: 650 }} size="small">
                         <TableHead>
                             <TableRow>
