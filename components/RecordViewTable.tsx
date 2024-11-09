@@ -1,24 +1,22 @@
 'use client'
 
 import { Box, MenuItem, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { AuthSuccessReturn, AuthSuccessReturnType } from "@/src/dto/Authentication.dto";
 import React, { useEffect } from "react";
+import { StringToRecord } from "@/src/dto/Transformers";
 
-export function AuthDataTabs({ AuthReturnJson }: { AuthReturnJson: AuthSuccessReturnType }) {
-    // Seperate the authJson.boardinfo into multiple arrays
+export function RecordViewTable({ DisplayRecord }: { DisplayRecord: Record<string, string> }) {
+    // Seperate the record into multiple arrays
     // Each array will be seperated by the first part of the key
-    // E.g. radio.1.freq => radio.1 => Radio 1
+    // E.g. radio.1.freq => radio => Radio
 
-    let boardinfo: Record<string, string> = {};
+    if (typeof DisplayRecord === 'string') DisplayRecord = StringToRecord.parse(DisplayRecord);
 
-    if (typeof AuthReturnJson.boardinfo !== 'string')
-        boardinfo = AuthReturnJson.boardinfo;
-    else {
-        boardinfo = AuthSuccessReturn.parse(AuthReturnJson).boardinfo;
-    }
+    // Create an object with the first part of the key as the key and the value as an array of objects
+    const arrayOfSubjects = Object.entries(DisplayRecord).reduce((acc, [key, value]) => {
+        let [subject] = key.split('.');
 
-    const arrayOfSubjects = Object.entries(boardinfo).reduce((acc, [key, value]) => {
-        const [subject] = key.split('.');
+        // Capitalize the first letter of the subject
+        subject = subject.charAt(0).toUpperCase() + subject.slice(1);
 
         if (!acc[subject]) {
             acc[subject] = [];
@@ -37,7 +35,6 @@ export function AuthDataTabs({ AuthReturnJson }: { AuthReturnJson: AuthSuccessRe
     }, [arrayOfSubjects, selectedTable]);
 
     const changeTable = (event: SelectChangeEvent) => {
-        console.log(event.target.value);
         if (typeof event.target.value !== 'undefined')
             setSelectedTable(event.target.value);
     }
