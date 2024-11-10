@@ -3,15 +3,13 @@ import { AuthTokenType } from "./Authentication.dto";
 
 // Make a static type to represent the response from a fetch request so it can be passed from server -> client
 export const FetchResponse = z.object({
-    headers: z.object({
-        raw: z.record(z.array(z.string())),
-    }),
+    headerArray: z.array(z.array(z.string())),
     ok: z.boolean(),
-    redirected: z.boolean(),
+    redirected: z.boolean().optional(),
     status: z.number(),
     statusText: z.string(),
-    type: z.string(),
-    url: z.string(),
+    type: z.string().optional(),
+    url: z.string().optional(),
     json: z.record(z.any(), z.any()),
 });
 export type FetchResponseType = z.infer<typeof FetchResponse>;

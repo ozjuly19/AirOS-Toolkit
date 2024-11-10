@@ -6,9 +6,18 @@ export const AddColonsToPlainMAC = z.string().transform((plainMac) => {
 })
 
 // Transformer used to cast an array of cookies from a PostAuth response into a single auth token
-export const CookieArrayToAuthToken = z.array(z.string()).transform((cookieArr) => {
-    return AuthToken.parse(cookieArr.find((index) => index.includes('AIROS_'))?.split(';')[0])
-})
+export const HijackedHeadersToAuthToken =
+    z.array(
+        z.array(
+            z.string()
+        )
+    ).transform((HeaderArr) => {
+        const c = HeaderArr.find((cookieArr) => {
+            return cookieArr[0] === 'ather_hijack_airos_cookie'
+        });
+
+        return c ? c[1] : undefined;
+    }).pipe(AuthToken)
 
 export const StringToRecord = z.string().transform((rawRecord: string) => {
     return rawRecord.split('\n').reduce((acc, line) => {
@@ -29,4 +38,4 @@ export const StringToRecord = z.string().transform((rawRecord: string) => {
 
         return acc;
     }, {} as Record<string, string>);
-})
+}).pipe(z.record(z.string(), z.string()));

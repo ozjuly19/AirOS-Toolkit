@@ -1,21 +1,12 @@
 import { z } from 'zod'
 import { StringToRecord } from './Transformers';
 
-// Used in AirOSLib mainly for storing JWTs
-export const AuthTokenMeta = z.object({
-    auth_token: z.custom<AuthTokenType>(),
-    station_ip: z.string().ip({ version: 'v4' }),
-    isValid: z.boolean()
-});
-export type AuthTokenStoreType = z.infer<typeof AuthTokenMeta>;
-
 // The station response if authentication is successful
 export const AuthSuccessReturn = z.object({
     readOnlyUser: z.boolean(),
     ccode: z.number(),
     boardinfo: z
-        .string()
-        .transform((rawBoardInfo: string) => StringToRecord.parse(rawBoardInfo)),
+        .string().pipe(StringToRecord),
     rd: z.array(z.string()),
     fullVersion: z.string(),
 });
@@ -24,7 +15,7 @@ export type AuthSuccessReturnType = z.infer<typeof AuthSuccessReturn>;
 // Data returned from PostAuth function
 export const PostAuthReturn = z.object({
     status: z.number(),
-    json: AuthSuccessReturn.transform((json) => AuthSuccessReturn.parse(json.boardinfo)),
+    json: AuthSuccessReturn,
     station_ip: z.string().ip({ version: 'v4' }),
 });
 export type PostAuthReturnType = z.infer<typeof PostAuthReturn>;
@@ -39,6 +30,14 @@ export type PostAuthParamsType = z.infer<typeof PostAuthParams>;
 
 export const AuthToken = z.string().length(51).includes('AIROS_');
 export type AuthTokenType = z.infer<typeof AuthToken>;
+
+// Used in AirOSLib mainly for storing JWTs
+export const AuthTokenMeta = z.object({
+    auth_token: AuthToken,
+    station_ip: z.string().ip({ version: 'v4' }),
+    isValid: z.boolean()
+});
+export type AuthTokenStoreType = z.infer<typeof AuthTokenMeta>;
 
 export const AuthContextData = z.object({
     AirOSTokens: z.array(AuthTokenMeta).default([]),
