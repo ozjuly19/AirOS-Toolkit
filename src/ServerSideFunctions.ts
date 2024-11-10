@@ -3,6 +3,7 @@
 import https from 'https'
 import nfetch, { RequestInit, RequestInfo, FormData } from 'node-fetch'
 import { FetchResponseType } from './dto/Fetch.dto';
+import { StringToRecord } from './dto/Transformers';
 
 export async function FetchWithFormData(url: URL | RequestInfo, FormDataKeyVal: Record<string, string>, init?: RequestInit): Promise<FetchResponseType> {
     const formData = new FormData();
@@ -28,6 +29,14 @@ export async function FetchWithoutCertVerify(url: URL | RequestInfo, init?: Requ
 
     const resp = await nfetch(url, CustAgentInit);
 
+    let json: any;
+
+    if (!resp.ok)
+        json = { error: resp.statusText }
+    else
+        resp.headers.get('content-type')?.includes('application/json') ?
+            json = await resp.json() : json = StringToRecord.parse(await resp.text()); // Convert record responses to "JSON" objects
+
     return {
         headers: { raw: resp.headers.raw() },
         ok: resp.ok,
@@ -36,6 +45,6 @@ export async function FetchWithoutCertVerify(url: URL | RequestInfo, init?: Requ
         statusText: resp.statusText,
         type: resp.type,
         url: resp.url,
-        json: await resp.json()
+        json
     }
 }
