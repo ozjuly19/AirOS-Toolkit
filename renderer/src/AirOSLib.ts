@@ -1,10 +1,9 @@
 'use client'
 
-import { AuthContextDataType, AuthTokenStoreType, AuthTokenType, PostAuthParamsType, PostAuthReturnType } from "@/src/dto/Authentication.dto";
-import { FetchWithFormData, FetchWithoutCertVerify } from "@/src/ServerSideFunctions";
-import { CookieArrayToAuthToken } from "./dto/Transformers";
+import { AuthContextDataType, AuthTokenStoreType, AuthTokenType, HijackedHeadersToAuthToken, PostAuthParamsType, PostAuthReturn, PostAuthReturnType } from "@/src/dto/Authentication.dto";
+import { StringToRecord } from "./dto/Transformers";
 import React from "react";
-import { AuthedGetParamsType, FetchResponseType } from "./dto/Fetch.dto";
+import { AuthedGetParams, AuthedGetParamsType, FetchResponseType } from "./dto/Fetch.dto";
 
 export const AirOSAuthContext = React.createContext<AuthContextDataType>({
     AirOSTokens: [],
@@ -37,7 +36,7 @@ export class AirOSAPICompatabilityLayer {
                 requiresAuthToken: true,
                 endpoint: '/getcfg.cgi',
                 fetchInit: {
-                    method: 'GET'
+                    method: 'GET',
                 }
             },
             doAuth: {
@@ -50,21 +49,47 @@ export class AirOSAPICompatabilityLayer {
         },
     }
 
-    private async AbstractFWCV(station_ip: string, headers: Headers, EndpointData: typeof this.APIEndpts.versionType.endpointType): Promise<FetchResponseType> {
-        return FetchWithoutCertVerify(`https://${station_ip}${EndpointData.endpoint}`, {
+    private async _ConstructFetchResponse(resp: Response): Promise<FetchResponseType> {
+        let json: any;
+
+        // Handle the weird json issues
+        if (resp.headers.get('Content-Type')?.includes('application/json'))
+            json = await resp.json();
+        else
+            json = StringToRecord.parse(await resp.text());
+
+        return {
+            status: resp.status,
+            statusText: resp.statusText,
+            ok: resp.ok,
+            headerArray: Array.from(resp.headers.entries()),
+            json
+        };
+    }
+
+    private async _AbstractFWCV(station_ip: string, headers: Headers, EndpointData: typeof this.APIEndpts.versionType.endpointType): Promise<FetchResponseType> {
+        const ret = await fetch(`https://${station_ip}${EndpointData.endpoint}`, {
             headers,
             ...EndpointData.fetchInit
         })
+
+        return await this._ConstructFetchResponse(ret);
     }
 
-    PostAuth_Safe = async ({ username, password, station_ip }: PostAuthParamsType) =>
-        FetchWithFormData(`https://${station_ip}${this.APIEndpts.v8.doAuth.endpoint}`,
-            { 'username': username, 'password': password },
-            this.APIEndpts.v8.doAuth.fetchInit
-        );
+    PostAuth_Safe = async ({ username, password, station_ip }: PostAuthParamsType): Promise<FetchResponseType> => {
+        // Create form data
+        const formData = new FormData();
+        formData.set('username', username);
+        formData.set('password', password);
 
-    GetConfig_Safe = async (station_ip: string, headers: Headers) => this.AbstractFWCV(station_ip, headers, this.APIEndpts.v8.getConfig);
-    GetStatus_Safe = async (station_ip: string, headers: Headers) => this.AbstractFWCV(station_ip, headers, this.APIEndpts.v8.getStatus);
+        return this._ConstructFetchResponse(await fetch(`https://${station_ip}${this.APIEndpts.v8.doAuth.endpoint}`, {
+            body: formData,
+            ...this.APIEndpts.v8.doAuth.fetchInit
+        }));
+    }
+
+    GetConfig_Safe = async (station_ip: string, headers: Headers) => this._AbstractFWCV(station_ip, headers, this.APIEndpts.v8.getConfig);
+    GetStatus_Safe = async (station_ip: string, headers: Headers) => this._AbstractFWCV(station_ip, headers, this.APIEndpts.v8.getStatus);
 }
 
 export class AuthDataHandler {
@@ -123,8 +148,11 @@ export class AirOSAuthentication extends AuthDataHandler {
     protected async AuthedGetCall_Middleware(endpoint: Function, callParams: AuthedGetParamsType): Promise<FetchResponseType> {
         let resp: FetchResponseType;
 
+        const headers = new Headers();
+        headers.set('ather_request_cookies', callParams.auth_token);
+
         // Make a call through the compatability class to the API for authentication
-        resp = await endpoint(callParams.station_ip, { 'Cookie': callParams.auth_token });
+        resp = await endpoint(callParams.station_ip, headers);
 
         // Auth failure
         if (resp.status == 403) {
@@ -161,12 +189,13 @@ export class AirOSAuthentication extends AuthDataHandler {
         // Extract station IP from the params
         const station_ip = PAP.station_ip;
 
+
         if (!resp.ok) {
             throw new Error('Failed to authenticate with station')
         }
 
-        let authCookieArray = resp.headers.raw['set-cookie'];
-        const auth_token = CookieArrayToAuthToken.parse(authCookieArray);
+        // Pass the headers to the transformer to extract the auth token from a hijacked cookie
+        const auth_token = HijackedHeadersToAuthToken.parse(Array.from(resp.headerArray));
 
         if (!auth_token) {
             throw new Error('No AIROS cookie found! Auth failed but, strangly...')
@@ -178,12 +207,16 @@ export class AirOSAuthentication extends AuthDataHandler {
             isValid: true
         });
 
-        const cAuthResponse = {
+        const cAuthResponse = PostAuthReturn.parse({
             station_ip,
-            ...resp
-        } as unknown as PostAuthReturnType;
+            status: resp.status,
+            json: resp.json,
+        });
 
         this.UpdateAuthResponse(cAuthResponse);
+
+        console.log(resp);
+        console.log(cAuthResponse);
 
         // If there is something more robust needed I'll edit this but a cast is stupid easy to understand and write lol
         return cAuthResponse;
@@ -201,7 +234,7 @@ export class AirOSGeneralAPI extends AirOSAuthentication {
 
         if (!token) throw new Error('No valid auth token found');
 
-        const AGPT = { station_ip, auth_token: token } as AuthedGetParamsType;
+        const AGPT = AuthedGetParams.parse({ station_ip, auth_token: token });
         const resp = await this.AuthedGetCall_Middleware(this.aOSAPI_CL.GetConfig_Safe, AGPT);
 
         return resp;
@@ -212,7 +245,7 @@ export class AirOSGeneralAPI extends AirOSAuthentication {
 
         if (!token) throw new Error('No valid auth token found');
 
-        const AGPT = { station_ip, auth_token: token } as AuthedGetParamsType;
+        const AGPT = AuthedGetParams.parse({ station_ip, auth_token: token });
         const resp = await this.AuthedGetCall_Middleware(this.aOSAPI_CL.GetStatus_Safe, AGPT);
 
         return resp;

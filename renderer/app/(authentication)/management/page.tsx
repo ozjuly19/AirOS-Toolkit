@@ -20,6 +20,12 @@ export default function HomePage() {
   const [AOSStatus, setAOSStatus] = React.useState<Record<string, string>>();
   const generalAPIClass = React.useMemo(() => new AirOSGeneralAPI(ctx), [ctx]);
 
+
+  React.useEffect(() => {
+    console.log(AOSConfig);
+  }, [AOSConfig]);
+
+
   const areStationsAddedAndSelected = AirOSTokens.length > 0 && selectedStation.station_ip !== '' && AirOSTokens.find((token) => { return token.isValid == true }) !== undefined;
 
   const drawMenuItems = AirOSTokens.map((token) => {
@@ -78,6 +84,7 @@ export default function HomePage() {
     if (!areStationsAddedAndSelected) return;
 
     const configResponse = await generalAPIClass.GetConfig(selectedStation.station_ip, selectedStation.auth_token);
+    console.log(configResponse);
     if (configResponse.json) setAOSConfig(configResponse.json);
   }
 

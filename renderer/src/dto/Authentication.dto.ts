@@ -25,7 +25,7 @@ export const PostAuthParams = z.object({
     username: z.string(),
     password: z.string(),
     station_ip: z.string().ip({ version: "v4" })
-})
+});
 export type PostAuthParamsType = z.infer<typeof PostAuthParams>;
 
 export const AuthToken = z.string().length(51).includes('AIROS_');
@@ -46,3 +46,16 @@ export const AuthContextData = z.object({
     setAuthResponses: z.any(),
 });
 export type AuthContextDataType = z.infer<typeof AuthContextData>;
+
+export const HijackedHeadersToAuthToken =
+    z.array(
+        z.array(
+            z.string()
+        )
+    ).transform((HeaderArr) => {
+        const c = HeaderArr.find((cookieArr) => {
+            return cookieArr[0] === 'ather_hijack_airos_cookie'
+        });
+
+        return c ? c[1] : undefined;
+    }).pipe(AuthToken);

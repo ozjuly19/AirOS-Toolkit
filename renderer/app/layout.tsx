@@ -43,28 +43,28 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   const [AuthResponses, setAuthResponses] = React.useState<PostAuthReturnType[]>([]);
 
   return (
-    <html lang="en" data-toolpad-color-scheme="light" suppressHydrationWarning>
+    <html lang="en" data-toolpad-color-scheme="dark" suppressHydrationWarning>
       <body>
+        <React.Suspense>
+          <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+            <AppProvider
+              navigation={NAVIGATION}
+              branding={BRANDING}
 
-        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <AppProvider
-            navigation={NAVIGATION}
-            branding={BRANDING}
-
-            theme={theme}
-          >
-            <AirOSAuthContext.Provider value={
-              {
-                AirOSTokens,
-                setAirOSTokens,
-                AuthResponses,
-                setAuthResponses
-              }}>
-              {props.children}
-            </AirOSAuthContext.Provider>
-          </AppProvider>
-        </AppRouterCacheProvider>
-
+              theme={theme}
+            >
+              <AirOSAuthContext.Provider value={
+                {
+                  AirOSTokens,
+                  setAirOSTokens,
+                  AuthResponses,
+                  setAuthResponses
+                }}>
+                {props.children}
+              </AirOSAuthContext.Provider>
+            </AppProvider>
+          </AppRouterCacheProvider>
+        </React.Suspense>
       </body>
     </html>
   );

@@ -9,8 +9,6 @@ export function RecordViewTable({ DisplayRecord }: { DisplayRecord: Record<strin
     // Each array will be seperated by the first part of the key
     // E.g. radio.1.freq => radio => Radio
 
-    if (typeof DisplayRecord === 'string') DisplayRecord = StringToRecord.parse(DisplayRecord);
-
     // Create an object with the first part of the key as the key and the value as an array of objects
     const arrayOfSubjects = Object.entries(DisplayRecord).reduce((acc, [key, value]) => {
         let [subject] = key.split('.');
