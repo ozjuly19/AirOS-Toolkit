@@ -11,6 +11,8 @@ import type { Navigation } from '@toolpad/core/AppProvider';
 import theme from '@/theme';
 import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
 import { AirOSAuthContext } from '@/src/AirOSLib';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const NAVIGATION: Navigation = [
   {
@@ -62,6 +64,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
                 }}>
                 {props.children}
               </AirOSAuthContext.Provider>
+              <ToastContainer theme={"dark"} />
             </AppProvider>
           </AppRouterCacheProvider>
         </React.Suspense>
