@@ -66,6 +66,7 @@ export default function StationAuthForm({ open, setOpen }: StationAuthFormProps)
                 />
             </DialogContent>
             <DialogActions>
+                <Button type='reset' onClick={() => setOpen(false)}>Cancel</Button>
                 <Button type='submit'>Submit</Button>
             </DialogActions>
         </Dialog>
