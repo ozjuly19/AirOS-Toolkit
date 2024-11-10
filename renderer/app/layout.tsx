@@ -8,7 +8,7 @@ import ManagementIcon from '@mui/icons-material/ManageAccounts';
 import DescriptionIcon from '@mui/icons-material/Description';
 import type { Navigation } from '@toolpad/core/AppProvider';
 
-import theme from '../theme';
+import theme from '@/theme';
 import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
 import { AirOSAuthContext } from '@/src/AirOSLib';
 

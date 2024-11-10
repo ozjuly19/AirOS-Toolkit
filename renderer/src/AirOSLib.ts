@@ -121,8 +121,6 @@ export class AirOSAuthentication extends AuthDataHandler {
 
     // Generic function to make authenticated GET calls to the API and manage the token auth status
     protected async AuthedGetCall_Middleware(endpoint: Function, callParams: AuthedGetParamsType): Promise<FetchResponseType> {
-        console.log(callParams.auth_token);
-
         let resp: FetchResponseType;
 
         // Make a call through the compatability class to the API for authentication

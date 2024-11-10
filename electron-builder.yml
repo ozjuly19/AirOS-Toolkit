@@ -1,0 +1,12 @@
+appId: com.ather.airostoolkit
+productName: AirOS Toolkit
+copyright: Copyright © 2024 Ather Technologies LLC.
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null
