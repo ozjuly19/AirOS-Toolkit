@@ -8,10 +8,6 @@ import React from "react";
 export default function CurrentAuthEntries() {
   const { AirOSTokens } = React.useContext(AirOSAuthContext);
 
-  React.useEffect(() => {
-    console.log(AirOSTokens);
-  }, [AirOSTokens]);
-
   return (
     <Card>
       <CardContent>

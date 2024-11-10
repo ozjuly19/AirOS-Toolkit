@@ -1,5 +1,5 @@
 import path from 'path'
-import { app, ipcMain, session } from 'electron'
+import { app, session } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
 
@@ -80,8 +80,4 @@ if (isProd) {
 
 app.on('window-all-closed', () => {
   app.quit()
-})
-
-ipcMain.on('message', async (event, arg) => {
-  event.reply('message', `${arg} World!`)
 })

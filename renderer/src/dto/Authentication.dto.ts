@@ -32,15 +32,15 @@ export const AuthToken = z.string().length(51).includes('AIROS_');
 export type AuthTokenType = z.infer<typeof AuthToken>;
 
 // Used in AirOSLib mainly for storing JWTs
-export const AuthTokenMeta = z.object({
+export const AuthTokenStore = z.object({
     auth_token: AuthToken,
     station_ip: z.string().ip({ version: 'v4' }),
     isValid: z.boolean()
 });
-export type AuthTokenStoreType = z.infer<typeof AuthTokenMeta>;
+export type AuthTokenStoreType = z.infer<typeof AuthTokenStore>;
 
 export const AuthContextData = z.object({
-    AirOSTokens: z.array(AuthTokenMeta).default([]),
+    AirOSTokens: z.array(AuthTokenStore).default([]),
     setAirOSTokens: z.any(),
     AuthResponses: z.array(PostAuthReturn).default([]),
     setAuthResponses: z.any(),

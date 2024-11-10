@@ -215,9 +215,6 @@ export class AirOSAuthentication extends AuthDataHandler {
 
         this.UpdateAuthResponse(cAuthResponse);
 
-        console.log(resp);
-        console.log(cAuthResponse);
-
         // If there is something more robust needed I'll edit this but a cast is stupid easy to understand and write lol
         return cAuthResponse;
     }
