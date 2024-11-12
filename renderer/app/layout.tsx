@@ -64,7 +64,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
                 }}>
                 {props.children}
               </AirOSAuthContext.Provider>
-              <ToastContainer theme={"dark"} />
+              <ToastContainer theme={"dark"} position="bottom-left" />
             </AppProvider>
           </AppRouterCacheProvider>
         </React.Suspense>

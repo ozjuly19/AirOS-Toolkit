@@ -1,7 +1,8 @@
-import { AirOSAuthContext, AirOSAuthentication } from "@/src/AirOSLib";
-import { PostAuthParamsType } from "@/src/dto/Authentication.dto";
+import { AirOSAuthContext, ApiInterface, AuthDataHandler } from "@/src/AirOSLib";
+import { PostAuthParamsType, PostAuthReturnType } from "@/src/dto/Authentication.dto";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, TextField } from "@mui/material";
 import React from "react";
+import { toast } from "react-toastify";
 
 
 interface StationAuthFormProps {
@@ -15,7 +16,17 @@ export default function StationAuthForm({ open, setOpen }: StationAuthFormProps)
     const submitAuth = async (data: PostAuthParamsType) => {
         setOpen(false);
 
-        await (new AirOSAuthentication(ctx)).PostAuth(data);
+        let auth: PostAuthReturnType | undefined;
+
+        try {
+            auth = await (new ApiInterface(new AuthDataHandler(ctx))).returnAndStoreAuthToken(data);
+        } catch (e) {
+            toast.error('Failed to authenticate to ' + data.station_ip + '. ' + e);
+            return
+        }
+
+        if (auth)
+            toast.success('Successfully authenticated to ' + data.station_ip);
     }
 
     return (

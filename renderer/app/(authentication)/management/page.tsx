@@ -5,9 +5,10 @@ import { Box, Button, MenuItem, Select, SelectChangeEvent, Stack, Tab, Tabs, Typ
 
 import StationAuthForm from '@/components/StationAuthForm';
 import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
-import { AirOSAuthContext, AirOSAuthentication, AirOSGeneralAPI } from '@/src/AirOSLib';
+import { AirOSAuthContext, ApiInterface, AuthDataHandler, } from '@/src/AirOSLib';
 import { RecordViewTable } from '@/components/RecordViewTable';
 import JsonObjectViewTree from '@/components/JsonObjectViewTree';
+import { StatusReturnType } from '@/src/Abstracts';
 
 export default function HomePage() {
   const ctx = React.useContext(AirOSAuthContext);
@@ -17,8 +18,8 @@ export default function HomePage() {
   const [authResponse, setAuthResponse] = React.useState<PostAuthReturnType>();
   const [selectedTab, setSelectedTab] = React.useState(0);
   const [AOSConfig, setAOSConfig] = React.useState<Record<string, string>>();
-  const [AOSStatus, setAOSStatus] = React.useState<Record<string, string>>();
-  const generalAPIClass = React.useMemo(() => new AirOSGeneralAPI(ctx), [ctx]);
+  const [AOSStatus, setAOSStatus] = React.useState<StatusReturnType>();
+  const apiInterface = React.useMemo(() => new ApiInterface(new AuthDataHandler(ctx)), []);
 
   const areStationsAddedAndSelected = AirOSTokens.length > 0 && selectedStation.station_ip !== '' && AirOSTokens.find((token) => { return token.isValid == true }) !== undefined;
 
@@ -76,16 +77,12 @@ export default function HomePage() {
 
   const getAOSConfig = async () => {
     if (!areStationsAddedAndSelected) return;
-
-    const configResponse = await generalAPIClass.GetConfig(selectedStation.station_ip, selectedStation.auth_token);
-    if (configResponse.json) setAOSConfig(configResponse.json);
+    setAOSConfig(await apiInterface.getConfig({ ...selectedStation }));
   }
 
   const getAOSStatus = async () => {
     if (!areStationsAddedAndSelected) return;
-
-    const statusResponse = await generalAPIClass.GetStatus(selectedStation.station_ip, selectedStation.auth_token);
-    if (statusResponse.json) setAOSStatus(statusResponse.json);
+    setAOSStatus(await apiInterface.getStatus({ ...selectedStation }));
   }
 
   React.useEffect(() => {
@@ -95,8 +92,8 @@ export default function HomePage() {
   }, [AirOSTokens, changeSelectedStation, selectedStation.station_ip]);
 
   React.useEffect(() => {
-    const airOSAuthClass = new AirOSAuthentication(ctx);
-    const json = airOSAuthClass.GetAuthResponseByIP(selectedStation.station_ip);
+    const authDataHandler = new AuthDataHandler(ctx);
+    const json = authDataHandler.GetAuthResponseByIP(selectedStation.station_ip);
     if (json) setAuthResponse(json);
   }, [ctx, selectedStation.station_ip]);
 

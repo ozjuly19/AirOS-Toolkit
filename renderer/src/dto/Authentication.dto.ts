@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { StringToRecord } from './Transformers';
 
+export const AuthToken = z.string().length(51).includes('AIROS_');
+export type AuthTokenType = z.infer<typeof AuthToken>;
+
 // The station response if authentication is successful
 export const AuthSuccessReturn = z.object({
     readOnlyUser: z.boolean(),
@@ -17,6 +20,7 @@ export const PostAuthReturn = z.object({
     status: z.number(),
     json: AuthSuccessReturn,
     station_ip: z.string().ip({ version: 'v4' }),
+    auth_token: AuthToken,
 });
 export type PostAuthReturnType = z.infer<typeof PostAuthReturn>;
 
@@ -27,9 +31,6 @@ export const PostAuthParams = z.object({
     station_ip: z.string().ip({ version: "v4" })
 });
 export type PostAuthParamsType = z.infer<typeof PostAuthParams>;
-
-export const AuthToken = z.string().length(51).includes('AIROS_');
-export type AuthTokenType = z.infer<typeof AuthToken>;
 
 // Used in AirOSLib mainly for storing JWTs
 export const AuthTokenStore = z.object({
@@ -46,6 +47,12 @@ export const AuthContextData = z.object({
     setAuthResponses: z.any(),
 });
 export type AuthContextDataType = z.infer<typeof AuthContextData>;
+
+export const TokenAuthParams = z.object({
+    auth_token: AuthToken.optional(),
+    station_ip: z.string().ip({ version: 'v4' })
+});
+export type TokenAuthParamsType = z.infer<typeof TokenAuthParams>;
 
 export const HijackedHeadersToAuthToken =
     z.array(
