@@ -4,9 +4,8 @@ import React from 'react';
 import { AppProvider } from '@toolpad/core/nextjs';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import LoginIcon from '@mui/icons-material/Login';
-import ManagementIcon from '@mui/icons-material/ManageAccounts';
 import DescriptionIcon from '@mui/icons-material/Description';
-import type { Navigation } from '@toolpad/core/AppProvider';
+import LanIcon from '@mui/icons-material/Lan'; import type { Navigation } from '@toolpad/core/AppProvider';
 
 import theme from '@/theme';
 import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
@@ -20,20 +19,22 @@ const NAVIGATION: Navigation = [
     title: 'Navigation',
   },
   {
-    segment: '',
-    title: 'Tools',
-    icon: <DescriptionIcon />,
+    segment: 'stations',
+    title: 'Stations',
+    icon: <LanIcon />,
+    children: [
+      {
+        segment: 'management/',
+        title: 'Credential Management',
+        icon: <LoginIcon />,
+      },
+      {
+        segment: 'currentAuthEntries/',
+        title: 'Auth Tokens',
+        icon: <DescriptionIcon />,
+      },
+    ],
   },
-  {
-    segment: 'management',
-    title: 'Station Management',
-    icon: <ManagementIcon />,
-  },
-  {
-    segment: 'currentAuthEntries',
-    title: 'Authenticated Stations',
-    icon: <LoginIcon />,
-  }
 ];
 
 const BRANDING = {

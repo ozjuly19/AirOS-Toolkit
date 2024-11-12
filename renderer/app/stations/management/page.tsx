@@ -10,7 +10,7 @@ import { RecordViewTable } from '@/components/RecordViewTable';
 import JsonObjectViewTree from '@/components/JsonObjectViewTree';
 import { StatusReturnType } from '@/src/Abstracts';
 
-export default function HomePage() {
+export default function ManagementPage() {
   const ctx = React.useContext(AirOSAuthContext);
   const { AirOSTokens } = ctx;
   const [selectedStation, setSelectedStation] = React.useState<AuthTokenStoreType>({ station_ip: '', auth_token: '', isValid: false });
