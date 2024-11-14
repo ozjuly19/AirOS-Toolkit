@@ -1,4 +1,4 @@
-import { AirOSAuthContext, ApiInterface, AuthDataHandler } from "@/src/AirOSLib";
+import { AirOSAuthContext, ApiInterface, AuthDataHandler } from "@/src/AirOSApi.lib";
 import { PostAuthParamsType, PostAuthReturnType } from "@/src/dto/Authentication.dto";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, TextField } from "@mui/material";
 import React from "react";

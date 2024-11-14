@@ -9,7 +9,7 @@ import LanIcon from '@mui/icons-material/Lan'; import type { Navigation } from '
 
 import theme from '@/theme';
 import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
-import { AirOSAuthContext } from '@/src/AirOSLib';
+import { AirOSAuthContext } from '@/src/AirOSApi.lib';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

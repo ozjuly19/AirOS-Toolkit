@@ -1,6 +1,6 @@
 'use client'
 
-import { AirOSAuthContext } from "@/src/AirOSLib";
+import { AirOSAuthContext } from "@/src/AirOSApi.lib";
 import { Card, CardContent, Paper, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import React from "react";
@@ -13,7 +13,7 @@ export default function CurrentAuthEntries() {
       <CardContent>
         <Typography variant='h5'>Current Auth Tokens</Typography>
 
-        <Paper sx={{ height: 400, width: '100%', marginTop: 1 }}>
+        <Paper sx={{ height: '100%', width: '100%', marginTop: 1 }}>
           <DataGrid
             rows={AirOSTokens.map((entry) => {
               return {
@@ -32,7 +32,7 @@ export default function CurrentAuthEntries() {
             ]}
             initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
             pageSizeOptions={[5, 10]}
-            checkboxSelection
+            checkboxSelection={false}
             sx={{ border: 0 }}
           />
         </Paper>

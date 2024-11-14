@@ -5,7 +5,7 @@ import { Box, Button, MenuItem, Select, SelectChangeEvent, Stack, Tab, Tabs, Typ
 
 import StationAuthForm from '@/components/StationAuthForm';
 import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
-import { AirOSAuthContext, ApiInterface, AuthDataHandler, } from '@/src/AirOSLib';
+import { AirOSAuthContext, ApiInterface, AuthDataHandler, } from '@/src/AirOSApi.lib';
 import { RecordViewTable } from '@/components/RecordViewTable';
 import JsonObjectViewTree from '@/components/JsonObjectViewTree';
 import { StatusReturnType } from '@/src/Abstracts';
