@@ -15,7 +15,9 @@ export const AirOSAuthContext = React.createContext<AuthContextDataType>({
     AirOSTokens: [],
     setAirOSTokens: () => { },
     AuthResponses: [],
-    setAuthResponses: () => { }
+    setAuthResponses: () => { },
+    CredentialStore: [],
+    setCredentialStore: () => { },
 });
 
 // Use this guy for managing auth data
@@ -72,8 +74,29 @@ export class AuthDataHandler {
         return this.authCtx.AuthResponses.find((authResp) => authResp.station_ip === station_ip);
     }
 
-    getTokenByIP(station_ip: string): AuthTokenStoreType | undefined {
-        return this.authCtx.AirOSTokens.find((token) => token.station_ip === station_ip);
+    async getTokenByIP(station_ip: string): Promise<AuthTokenStoreType | undefined> {
+        // Lookup in the database
+        const storedToken = this.authCtx.AirOSTokens.find((token) => token.station_ip === station_ip);
+        if (storedToken) return storedToken;
+
+        const apiInterface = new ApiInterface(this);
+
+        // If not found in the database attempt to authenticate with the credential store
+        for (const cred of this.authCtx.CredentialStore) {
+            console.log(`Attempting to authenticate with cred id ${cred.order} at ${station_ip}`);
+
+            const token = await apiInterface.returnAndStoreAuthToken({
+                station_ip,
+                username: cred.username,
+                password: cred.password
+            }).catch((error) => {
+                console.error(error, `'Credential #: ${cred.order}\nIP: ${station_ip}`);
+            });
+
+            if (token) {
+                return { ...token, isValid: true } as AuthTokenStoreType;
+            }
+        }
     }
 }
 
@@ -102,16 +125,16 @@ export class ApiInterface extends AbstractApiMethods {
         return ret;
     }
     async getConfig(params: authDto.TokenAuthParamsType): Promise<Record<string, string>> {
-        if (!params.auth_token) params.auth_token = this.auth.getTokenByIP(params.station_ip)?.auth_token;
+        if (!params.auth_token) params.auth_token = (await this.auth.getTokenByIP(params.station_ip))?.auth_token;
         return this.apiv8.getConfig(params)
     }
     async getStatus(params: authDto.TokenAuthParamsType): Promise<StatusReturnType> {
-        if (!params.auth_token) params.auth_token = this.auth.getTokenByIP(params.station_ip)?.auth_token;
+        if (!params.auth_token) params.auth_token = (await this.auth.getTokenByIP(params.station_ip))?.auth_token;
         return this.apiv8.getStatus(params)
     }
     // Setters
     async setTokenUserPassword(params: apiDto.PasswordChangeParamsType): Promise<apiDto.PasswordChangeResponseType> {
-        if (!params.auth_token) params.auth_token = this.auth.getTokenByIP(params.station_ip)?.auth_token;
+        if (!params.auth_token) params.auth_token = (await this.auth.getTokenByIP(params.station_ip))?.auth_token;
         return this.apiv8.setTokenUserPassword(params)
     }
 

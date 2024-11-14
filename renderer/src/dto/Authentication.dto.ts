@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { set, z } from 'zod'
 import { StringToRecord } from './Transformers';
 
 export const AuthToken = z.string().length(51).includes('AIROS_');
@@ -40,11 +40,21 @@ export const AuthTokenStore = z.object({
 });
 export type AuthTokenStoreType = z.infer<typeof AuthTokenStore>;
 
+// Stores username password pairs with a use order for automatic authentication
+export const CredentialStore = z.object({
+    username: z.string(),
+    password: z.string(),
+    order: z.number()
+});
+export type CredentialStoreType = z.infer<typeof CredentialStore>;
+
 export const AuthContextData = z.object({
     AirOSTokens: z.array(AuthTokenStore).default([]),
     setAirOSTokens: z.any(),
     AuthResponses: z.array(PostAuthReturn).default([]),
     setAuthResponses: z.any(),
+    CredentialStore: z.array(CredentialStore).default([]),
+    setCredentialStore: z.any(),
 });
 export type AuthContextDataType = z.infer<typeof AuthContextData>;
 

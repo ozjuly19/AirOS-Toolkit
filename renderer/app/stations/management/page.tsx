@@ -1,141 +1,145 @@
-'use client'
+// BUGGED!!!
+// Somewhere in this file is an unhandled promise (I think)
+// and I can't be bothered to find it because I think I'll cut this file
 
-import React from 'react';
-import { Box, Button, MenuItem, Select, SelectChangeEvent, Stack, Tab, Tabs, Typography } from '@mui/material';
+// 'use client'
 
-import StationAuthForm from '@/components/StationAuthForm';
-import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
-import { AirOSAuthContext, ApiInterface, AuthDataHandler, } from '@/src/AirOSApi.lib';
-import { RecordViewTable } from '@/components/RecordViewTable';
-import JsonObjectViewTree from '@/components/JsonObjectViewTree';
-import { StatusReturnType } from '@/src/Abstracts';
+// import React from 'react';
+// import { Box, Button, MenuItem, Select, SelectChangeEvent, Stack, Tab, Tabs, Typography } from '@mui/material';
 
-export default function ManagementPage() {
-  const ctx = React.useContext(AirOSAuthContext);
-  const { AirOSTokens } = ctx;
-  const [selectedStation, setSelectedStation] = React.useState<AuthTokenStoreType>({ station_ip: '', auth_token: '', isValid: false });
-  const [authFormOpen, setAuthFormOpen] = React.useState(false);
-  const [authResponse, setAuthResponse] = React.useState<PostAuthReturnType>();
-  const [selectedTab, setSelectedTab] = React.useState(0);
-  const [AOSConfig, setAOSConfig] = React.useState<Record<string, string>>();
-  const [AOSStatus, setAOSStatus] = React.useState<StatusReturnType>();
-  const apiInterface = React.useMemo(() => new ApiInterface(new AuthDataHandler(ctx)), []);
+// import StationAuthForm from '@/components/StationAuthForm';
+// import { AuthTokenStoreType, PostAuthReturnType } from '@/src/dto/Authentication.dto';
+// import { AirOSAuthContext, ApiInterface, AuthDataHandler, } from '@/src/AirOSApi.lib';
+// import { RecordViewTable } from '@/components/RecordViewTable';
+// import JsonObjectViewTree from '@/components/JsonObjectViewTree';
+// import { StatusReturnType } from '@/src/Abstracts';
 
-  const areStationsAddedAndSelected = AirOSTokens.length > 0 && selectedStation.station_ip !== '' && AirOSTokens.find((token) => { return token.isValid == true }) !== undefined;
+// export default function ManagementPage() {
+//   const ctx = React.useContext(AirOSAuthContext);
+//   const { AirOSTokens } = ctx;
+//   const [selectedStation, setSelectedStation] = React.useState<AuthTokenStoreType>({ station_ip: '', auth_token: '', isValid: false });
+//   const [authFormOpen, setAuthFormOpen] = React.useState(false);
+//   const [authResponse, setAuthResponse] = React.useState<PostAuthReturnType>();
+//   const [selectedTab, setSelectedTab] = React.useState(0);
+//   const [AOSConfig, setAOSConfig] = React.useState<Record<string, string>>();
+//   const [AOSStatus, setAOSStatus] = React.useState<StatusReturnType>();
+//   const apiInterface = React.useMemo(() => new ApiInterface(new AuthDataHandler(ctx)), []);
 
-  const drawMenuItems = AirOSTokens.map((token) => {
-    if (!token) return null;
+//   const areStationsAddedAndSelected = AirOSTokens.length > 0 && selectedStation.station_ip !== '' && AirOSTokens.find((token) => { return token.isValid == true }) !== undefined;
 
-    return (
-      <MenuItem key={token.station_ip} value={token.station_ip}>{token.station_ip}</MenuItem>
-    );
-  });
+//   const drawMenuItems = AirOSTokens.map((token) => {
+//     if (!token) return null;
 
-  const changeSelectedStation = React.useCallback((event: SelectChangeEvent) => {
-    const station_ip = event.target.value as string;
-    const token = AirOSTokens.find((token) => token.station_ip === station_ip);
+//     return (
+//       <MenuItem key={token.station_ip} value={token.station_ip}>{token.station_ip}</MenuItem>
+//     );
+//   });
 
-    if (token) {
-      setSelectedStation(token);
-    }
-  }, [AirOSTokens]);
+//   const changeSelectedStation = React.useCallback((event: SelectChangeEvent) => {
+//     const station_ip = event.target.value as string;
+//     const token = AirOSTokens.find((token) => token.station_ip === station_ip);
 
-  interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-  }
+//     if (token) {
+//       setSelectedStation(token);
+//     }
+//   }, [AirOSTokens]);
 
-  const CustomTabPanel = (props: TabPanelProps) => {
-    const { children, value, index, ...other } = props;
+//   interface TabPanelProps {
+//     children?: React.ReactNode;
+//     index: number;
+//     value: number;
+//   }
 
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-      >
-        {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-      </div>
-    );
-  }
+//   const CustomTabPanel = (props: TabPanelProps) => {
+//     const { children, value, index, ...other } = props;
 
-  const changeTab = (event: React.SyntheticEvent, newValue: number) => {
-    switch (newValue) {
-      case 1:
-        getAOSConfig();
-        break;
-      case 2:
-        getAOSStatus();
-        break;
-    }
+//     return (
+//       <div
+//         role="tabpanel"
+//         hidden={value !== index}
+//         id={`simple-tabpanel-${index}`}
+//         aria-labelledby={`simple-tab-${index}`}
+//         {...other}
+//       >
+//         {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+//       </div>
+//     );
+//   }
 
-    setSelectedTab(newValue);
-  }
+//   const changeTab = (event: React.SyntheticEvent, newValue: number) => {
+//     switch (newValue) {
+//       case 1:
+//         getAOSConfig();
+//         break;
+//       case 2:
+//         getAOSStatus();
+//         break;
+//     }
 
-  const getAOSConfig = async () => {
-    if (!areStationsAddedAndSelected) return;
-    setAOSConfig(await apiInterface.getConfig({ ...selectedStation }));
-  }
+//     setSelectedTab(newValue);
+//   }
 
-  const getAOSStatus = async () => {
-    if (!areStationsAddedAndSelected) return;
-    setAOSStatus(await apiInterface.getStatus({ ...selectedStation }));
-  }
+//   const getAOSConfig = async () => {
+//     if (!areStationsAddedAndSelected) return;
+//     setAOSConfig(await apiInterface.getConfig({ ...selectedStation }));
+//   }
 
-  React.useEffect(() => {
-    if (AirOSTokens.length > 0 && selectedStation.station_ip === '') {
-      changeSelectedStation({ target: { value: AirOSTokens[0].station_ip } } as SelectChangeEvent);
-    }
-  }, [AirOSTokens, changeSelectedStation, selectedStation.station_ip]);
+//   const getAOSStatus = async () => {
+//     if (!areStationsAddedAndSelected) return;
+//     setAOSStatus(await apiInterface.getStatus({ ...selectedStation }));
+//   }
 
-  React.useEffect(() => {
-    const authDataHandler = new AuthDataHandler(ctx);
-    const json = authDataHandler.GetAuthResponseByIP(selectedStation.station_ip);
-    if (json) setAuthResponse(json);
-  }, [ctx, selectedStation.station_ip]);
+//   React.useEffect(() => {
+//     if (AirOSTokens.length > 0 && selectedStation.station_ip === '') {
+//       changeSelectedStation({ target: { value: AirOSTokens[0].station_ip } } as SelectChangeEvent);
+//     }
+//   }, [AirOSTokens, changeSelectedStation, selectedStation.station_ip]);
 
-  return (
-    <Box>
-      <Stack direction="row" spacing={1}>
-        {areStationsAddedAndSelected &&
+//   React.useEffect(() => {
+//     const authDataHandler = new AuthDataHandler(ctx);
+//     const json = authDataHandler.GetAuthResponseByIP(selectedStation.station_ip);
+//     if (json) setAuthResponse(json);
+//   }, [ctx, selectedStation.station_ip]);
 
-          <Select
-            value={selectedStation.station_ip}
-            onChange={changeSelectedStation}
-          >
-            {drawMenuItems}
-          </Select>
-        }
+//   return (
+//     <Box>
+//       <Stack direction="row" spacing={1}>
+//         {areStationsAddedAndSelected &&
 
-        <Button variant='outlined' onClick={() => setAuthFormOpen(true)}>Login to Station</Button>
+//           <Select
+//             value={selectedStation.station_ip}
+//             onChange={changeSelectedStation}
+//           >
+//             {drawMenuItems}
+//           </Select>
+//         }
 
-      </Stack>
+//         <Button variant='outlined' onClick={() => setAuthFormOpen(true)}>Login to Station</Button>
 
-      {areStationsAddedAndSelected && <> {/* HIDDEN UNLESS SELECTED A STATION */}
+//       </Stack>
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', marginTop: 1 }}>
-          <Tabs variant="fullWidth" value={selectedTab} onChange={changeTab} aria-label="basic tabs example">
-            <Tab label="View Auth Info" />
-            <Tab label="View Current Config" />
-            <Tab label="View Current Status" />
-          </Tabs>
-        </Box>
-        <CustomTabPanel value={selectedTab} index={0}>
-          {authResponse && <RecordViewTable DisplayRecord={authResponse.json.boardinfo} />}
-        </CustomTabPanel>
-        <CustomTabPanel value={selectedTab} index={1}>
-          {AOSConfig ? <RecordViewTable DisplayRecord={AOSConfig} /> : <Typography>Collecting data, please wait...</Typography>}
-        </CustomTabPanel>
-        <CustomTabPanel value={selectedTab} index={2}>
-          {AOSStatus ? <JsonObjectViewTree json={AOSStatus} /> : <Typography>Collecting data, please wait...</Typography>}
-        </CustomTabPanel>
+//       {areStationsAddedAndSelected && <> {/* HIDDEN UNLESS SELECTED A STATION */}
 
-      </> /* END OF HIDDEN UNLESS SELECTED STATION */}
+//         <Box sx={{ borderBottom: 1, borderColor: 'divider', marginTop: 1 }}>
+//           <Tabs variant="fullWidth" value={selectedTab} onChange={changeTab} aria-label="basic tabs example">
+//             <Tab label="View Auth Info" />
+//             <Tab label="View Current Config" />
+//             <Tab label="View Current Status" />
+//           </Tabs>
+//         </Box>
+//         <CustomTabPanel value={selectedTab} index={0}>
+//           {authResponse && <RecordViewTable DisplayRecord={authResponse.json.boardinfo} />}
+//         </CustomTabPanel>
+//         <CustomTabPanel value={selectedTab} index={1}>
+//           {AOSConfig ? <RecordViewTable DisplayRecord={AOSConfig} /> : <Typography>Collecting data, please wait...</Typography>}
+//         </CustomTabPanel>
+//         <CustomTabPanel value={selectedTab} index={2}>
+//           {AOSStatus ? <JsonObjectViewTree json={AOSStatus} /> : <Typography>Collecting data, please wait...</Typography>}
+//         </CustomTabPanel>
 
-      <StationAuthForm open={authFormOpen} setOpen={setAuthFormOpen} />
-    </Box>
-  );
-}
+//       </> /* END OF HIDDEN UNLESS SELECTED STATION */}
+
+//       <StationAuthForm open={authFormOpen} setOpen={setAuthFormOpen} />
+//     </Box>
+//   );
+// }
